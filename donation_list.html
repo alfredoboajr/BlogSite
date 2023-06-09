@@ -1,0 +1,57 @@
+<?php
+// Check if the user is logged in
+session_start();
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    // Redirect to the login page if not logged in
+    header('Location: login.php');
+    exit;
+}
+
+// Include the necessary files and libraries
+require_once 'db_config.php';
+require_once 'functions.php';
+
+// Fetch the donation records from the database
+try {
+    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    $stmt = $conn->query("SELECT * FROM donations");
+    $donations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (Exception $e) {
+    echo 'An error occurred: ' . $e->getMessage();
+}
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Donation List</title>
+    <link rel="stylesheet" href="donation_list.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Donation List</h1>
+        
+        <table class="donation-table">
+            <tr>
+                <th>ID</th>
+                <th>Paymaya Name</th>
+                <th>Screenshot</th>
+                <th>Timestamp</th>
+                <th>Actions</th>
+            </tr>
+            <?php foreach ($donations as $donation): ?>
+            <tr>
+                <td><?php echo escape($donation['id']); ?></td>
+                <td><?php echo escape($donation['paymaya_name']); ?></td>
+                <td><?php echo '<img src="' . escape($donation['screenshot']) . '" alt="Screenshot" width="100px">'; ?></td>
+                <td><?php echo escape($donation['timestamp']); ?></td>
+                <td><a href="delete_donation.php?id=<?php echo escape($donation['id']); ?>">Delete</a></td>
+            </tr>
+            <?php endforeach; ?>
+        </table>
+    </div>
+</body>
+</html>
